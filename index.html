@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Thiết bị Chiếu sáng</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 10px 0;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #ketQuaTrangThai {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Thêm thiết bị</h2>
+    <input id="maThietBi" placeholder="Nhập mã thiết bị">
+    <button onclick="themThietBi()">Thêm</button>
+  </div>
+
+  <div class="card">
+    <h2>Bật/Tắt thiết bị</h2>
+    <input id="maThietBiBatTat" placeholder="Nhập mã thiết bị">
+    <button onclick="batTatThietBi()">Bật/Tắt</button>
+  </div>
+
+  <div class="card">
+    <h2>Trạng thái thiết bị</h2>
+    <input id="maThietBiTrangThai" placeholder="Nhập mã thiết bị">
+    <button onclick="layTrangThai()">Xem trạng thái</button>
+    <p id="ketQuaTrangThai"></p>
+  </div>
+
+  <script>
+    let web3;
+    let contract;
+    let userAccount;
+
+    const contractAddress = "0x9D7f74d0C41E726EC95884E0e97Fa6129e3b5E99"; // <-- CHỈNH LẠI
+    const abi = [ /* Dán ABI đầy đủ vào đây */ ];
+
+    window.addEventListener('load', async () => {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const accounts = await web3.eth.getAccounts();
+        userAccount = accounts[0];
+        contract = new web3.eth.Contract(abi, contractAddress);
+
+        console.log("Kết nối thành công với MetaMask");
+      } else {
+        alert("Hãy cài đặt MetaMask để tiếp tục!");
+      }
+    });
+
+    async function themThietBi() {
+      const id = document.getElementById("maThietBi").value;
+      await contract.methods.themThietBi(id).send({ from: userAccount });
+      alert("Đã thêm thiết bị!");
+    }
+
+    async function batTatThietBi() {
+      const id = document.getElementById("maThietBiBatTat").value;
+      await contract.methods.batTatThietBi(id).send({ from: userAccount });
+      alert("Đã bật/tắt thiết bị!");
+    }
+
+    async function layTrangThai() {
+      const id = document.getElementById("maThietBiTrangThai").value;
+      const result = await contract.methods.layTrangThaiThietBi(id).call();
+      document.getElementById("ketQuaTrangThai").innerText =
+        (result[0] ? "Đang bật" : "Đang tắt") + " | Tổng thời gian sử dụng: " + result[1] + " giờ";
+    }
+  </script>
+</body>
+</html>
